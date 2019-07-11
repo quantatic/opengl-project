@@ -19,6 +19,8 @@ mat4 *identityMatrix() {
     result->vals[5] = 1;
     result->vals[10] = 1;
     result->vals[15] = 1;
+
+    return result;
 }
 
 void rotateMatrix(mat4 *result, mat4 *in, float x, float y, float z, float angle) {

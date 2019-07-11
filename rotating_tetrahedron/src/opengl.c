@@ -129,15 +129,20 @@ int main()
 
         // draw our first triangle
         glUseProgram(shaderProgram);
+        
+
 
         mat4 *model = identityMatrix();
+
         scaleMatrix(model, model, 0.5, 0.5, 0.5);
+
         rotateMatrix(model, model, 1, 1, 1, angle);
         translateMatrix(model, model, 0.45, 0, 0);
 
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, matrixPointer(model));
 
         destroyMatrix(model);
+
         
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 
@@ -166,6 +171,7 @@ int main()
         movement += 0.00005;
         scale += 0.0001;
 
+
         frames++;
 
         if(glfwGetTime() >= 1) {
@@ -187,6 +193,18 @@ int main()
     return 0;
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------

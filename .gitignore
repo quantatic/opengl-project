@@ -1,1 +1,2 @@
-bin/opengl.exe
+#ignore built program
+bin/opengl.exe 
