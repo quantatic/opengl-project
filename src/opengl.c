@@ -59,10 +59,10 @@ int main()
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float vertices[] = {
-        0.0f, -sqrt(6) / 9, -sqrt(3) / 3, 1.0f, 0.0f, 0.0f,   //closest vertex bottom
-        -0.5f, -sqrt(6) / 9, sqrt(3) / 6, 0.5f, 0.5f, 0.5f,   //back vertex left
-        0.5f, -sqrt(6) / 9, sqrt(3) / 6, 0.0f, 1.0f, 0.0f,    //back vertex right
-        0.0f, 2 * sqrt(6) / 9, 0.0f , 0.0f, 0.0f, 1.0f,   //top vertex
+        0.0f,  -sqrt(6) / 9, -sqrt(3) / 3, 1.0f, 0.0f, 0.0f,   //closest vertex bottom
+        -0.5f, -sqrt(6) / 9, sqrt(3) / 6,  0.5f, 0.5f, 0.5f,   //back vertex left
+        0.5f,  -sqrt(6) / 9, sqrt(3) / 6,  0.0f, 1.0f, 0.0f,    //back vertex right
+        0.0f,  2 * sqrt(6) / 9, 0.0f,      0.0f, 0.0f, 1.0f,   //top vertex
     };
 
     unsigned int indices[] = {  // note that we start from 0!
@@ -111,7 +111,11 @@ int main()
     // -----------
     
     float angle = 0;
+    float movement = 0;
+    float scale = 0.5;
 
+    int frames = 0;
+    glfwSetTime(0);
     while (!glfwWindowShouldClose(window))
     {
         // input
@@ -126,14 +130,31 @@ int main()
         // draw our first triangle
         glUseProgram(shaderProgram);
 
-       mat4 model = rotationMatrix(1, 1, 1, angle);
+        mat4 *model = identityMatrix();
+        scaleMatrix(model, model, 0.5, 0.5, 0.5);
+        rotateMatrix(model, model, 1, 1, 1, angle);
+        translateMatrix(model, model, 0.45, 0, 0);
 
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_TRUE, matrixPointer(&model));
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, matrixPointer(model));
+
+        destroyMatrix(model);
         
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 
-        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
+
+        model = identityMatrix();
+        scaleMatrix(model, model, 0.5, 0.5, 0.5);
+        rotateMatrix(model, model, 1, 1, 1, angle);
+        translateMatrix(model, model, -0.45, 0, 0);
+
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, matrixPointer(model));
+
+        destroyMatrix(model);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
+
         glBindVertexArray(0); // no need to unbind it every time 
  
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -142,6 +163,16 @@ int main()
         glfwPollEvents();
 
         angle += 0.0005;
+        movement += 0.00005;
+        scale += 0.0001;
+
+        frames++;
+
+        if(glfwGetTime() >= 1) {
+            printf("[+] FPS: %d\n", frames);
+            frames = 0;
+            glfwSetTime(0);
+        }
     }
 
     // optional: de-allocate all resources once they've outlived their purpose:

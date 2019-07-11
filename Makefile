@@ -9,7 +9,9 @@ BIN_DIR = bin
 SRC_DIR = src
 
 SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
+HEADER_FILES = $(wildcard $(SRC_DIR)/*.h)
+
 OUT_FILE = $(BIN_DIR)/$(OUT_FILE)
 
-all: $(SRC_FILES)
+all: $(SRC_FILES) $(HEADER_FILES)
 	/bin/bash -c "$(CC) $(SRC_FILES) $(INCLUDE_FLAGS) $(LDFLAGS) -o $(BIN_DIR)/opengl.exe"
