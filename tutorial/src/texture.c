@@ -50,15 +50,8 @@ GLuint loadTextureBMP(const char *texturePath) {
     glGenTextures(1, &textureID);
 
     glBindTexture(GL_TEXTURE_2D, textureID);
-    printf("Texture bound\n");
-
-    printf("%d\n", imageSize);
-
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, data);
-    printf("Texture bound\n");
     glGenerateMipmap(GL_TEXTURE_2D);
-
-    printf("Done loading texture\n");
 
     return textureID;    
 }
