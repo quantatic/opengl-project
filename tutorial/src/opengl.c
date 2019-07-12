@@ -7,6 +7,7 @@
 
 #include "shader.h"
 #include "matrix.h"
+#include "texture.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -54,15 +55,16 @@ int main()
     // build and compile our shader program
     // ------------------------------------
     // vertex shader
-    GLuint shaderProgram = getShaderProgram("shaders/main.vert", "shaders/main.frag");
+    GLuint shaderProgram = loadShaderProgram("shaders/main.vert", "shaders/main.frag");
+    GLuint texture = loadTextureBMP("textures/brick.bmp");
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float vertices[] = {
-        0.0f,  -sqrt(6) / 9, -sqrt(3) / 3, 1.0f, 0.0f, 0.0f,   //closest vertex bottom
-        -0.5f, -sqrt(6) / 9, sqrt(3) / 6,  0.5f, 0.5f, 0.5f,   //back vertex left
-        0.5f,  -sqrt(6) / 9, sqrt(3) / 6,  0.0f, 1.0f, 0.0f,    //back vertex right
-        0.0f,  2 * sqrt(6) / 9, 0.0f,      0.0f, 0.0f, 1.0f,   //top vertex
+        0.0f,  -sqrt(6) / 9, -sqrt(3) / 3, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,   //closest vertex bottom
+        -0.5f, -sqrt(6) / 9, sqrt(3) / 6,  0.5f, 0.5f, 0.5f, 1.0f, 0.0f,   //back vertex left
+        0.5f,  -sqrt(6) / 9, sqrt(3) / 6,  0.0f, 1.0f, 0.0f, 0.0f, 0.0f,    //back vertex right
+        0.0f,  2 * sqrt(6) / 9, 0.0f,      0.0f, 0.0f, 1.0f, 0.0f, 1.0f   //top vertex
     };
 
     unsigned int indices[] = {  // note that we start from 0!
@@ -86,7 +88,7 @@ int main()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    glBindVertexBuffer(0, VBO, 0, 6 * sizeof(float));
+    glBindVertexBuffer(0, VBO, 0, 8 * sizeof(float));
 
     glVertexAttribFormat(0, 3, GL_FLOAT, GL_FALSE, 0);
     glVertexAttribBinding(0, 0);
@@ -95,6 +97,10 @@ int main()
     glVertexAttribFormat(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float));
     glVertexAttribBinding(1, 0);
     glEnableVertexAttribArray(1);
+
+    glVertexAttribFormat(2, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float));
+    glVertexAttribBinding(2, 0);
+    glEnableVertexAttribArray(2);
 
     // remember: do NOT unbind the EBO while a VAO is active as the bound element buffer object IS stored in the VAO; keep the EBO bound.
     //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -118,20 +124,14 @@ int main()
     glfwSetTime(0);
     while (!glfwWindowShouldClose(window))
     {
-        // input
-        // -----
         processInput(window);
 
-        // render
-        // ------
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // draw our first triangle
         glUseProgram(shaderProgram);
         
-
-
         mat4 *model = identityMatrix();
 
         scaleMatrix(model, model, 0.5, 0.5, 0.5);
@@ -142,8 +142,8 @@ int main()
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, matrixPointer(model));
 
         destroyMatrix(model);
-
         
+        glBindTexture(GL_TEXTURE_2D, texture);
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -155,8 +155,8 @@ int main()
         translateMatrix(model, model, -0.45, 0, 0);
 
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, matrixPointer(model));
-
         destroyMatrix(model);
+
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
 
@@ -193,17 +193,6 @@ int main()
     return 0;
 
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly

@@ -2,8 +2,7 @@
 #define SHADER_H
 
 #include <GL/glew.h>
-#include <stdio.h>
 
-GLuint getShaderProgram(const char *vertexPath, const char *fragmentPath);
+GLuint loadShaderProgram(const char *vertexPath, const char *fragmentPath);
 
 #endif

@@ -1,8 +1,8 @@
+#include "matrix.h"
+
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-
-#include "matrix.h"
 
 typedef struct mat4 {
     float vals[16];
