@@ -6,12 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-typedef struct mat4 {
-    float vals[16];
-} mat4;
-
-mat4 *identityMatrix() {
-    mat4 *result = malloc(sizeof(mat4));
+void identityMatrix(mat4 *result) {
 
     for(int i = 0; i < 16; i++) {
         result->vals[i] = 0;
@@ -21,12 +16,11 @@ mat4 *identityMatrix() {
     result->vals[5] = 1;
     result->vals[10] = 1;
     result->vals[15] = 1;
-
-    return result;
 }
 
-void rotateMatrix(mat4 *result, mat4 *in, vec3 axis, float angle) {
-    vec3 normalized = normal(axis); //axis vector has to be unit vector
+void rotateMatrix(mat4 *result, mat4 *in, vec3 *axis, float angle) {
+    vec3 normalized;
+    normal(&normalized, axis); //axis vector has to be unit vector
 
     mat4 rotationModifier; //stores the rotationModifier matrix used
 	rotationModifier.vals[0] = cos(angle) + normalized.x * normalized.x * (1 - cos(angle));
@@ -52,22 +46,22 @@ void rotateMatrix(mat4 *result, mat4 *in, vec3 axis, float angle) {
     multiplyMatrices(result, &rotationModifier, in);
 }
 
-void scaleMatrix(mat4 *result, mat4 *in, vec3 scale) {
+void scaleMatrix(mat4 *result, mat4 *in, vec3 *scale) {
     mat4 scaleModifier; //stores the scale matrix used;
     
     for(int i = 0; i < 16; i++) {
         scaleModifier.vals[i] = 0;
     }
 
-    scaleModifier.vals[0] = scale.x;
-    scaleModifier.vals[5] = scale.y;
-    scaleModifier.vals[10] = scale.z;
+    scaleModifier.vals[0] = scale->x;
+    scaleModifier.vals[5] = scale->y;
+    scaleModifier.vals[10] = scale->z;
     scaleModifier.vals[15] = 1;
 
     multiplyMatrices(result, &scaleModifier, in);
 }
 
-void translateMatrix(mat4 *result, mat4 *in, vec3 translation) {
+void translateMatrix(mat4 *result, mat4 *in, vec3 *translation) {
     mat4 translationModifier; //stores the translation matrix used
 
     for(int i = 0; i < 16; i++) {
@@ -79,16 +73,14 @@ void translateMatrix(mat4 *result, mat4 *in, vec3 translation) {
     translationModifier.vals[10] = 1;
     translationModifier.vals[15] = 1;
 
-    translationModifier.vals[12] = translation.x;  //set up actual translation values
-    translationModifier.vals[13] = translation.y;
-    translationModifier.vals[14] = translation.z;
+    translationModifier.vals[12] = translation->x;  //set up actual translation values
+    translationModifier.vals[13] = translation->y;
+    translationModifier.vals[14] = translation->z;
 
     multiplyMatrices(result, &translationModifier, in);
 }
 
-mat4 *orthoMatrix(float left, float right, float bottom, float top, float near, float far) {
-    mat4 *result = malloc(sizeof(mat4));	
-
+void orthoMatrix(mat4 *result, float left, float right, float bottom, float top, float near, float far) {
     for(int i = 0; i < 16; i++) {
         result->vals[i] = 0;
     }
@@ -103,17 +95,13 @@ mat4 *orthoMatrix(float left, float right, float bottom, float top, float near, 
     result->vals[13] = (top + bottom) / (bottom - top);
     result->vals[14] = (far + near) / (near - far);
     result->vals[15] = 1;
-
-    return result;
 }
 
-mat4 *perspectiveMatrix(float fov, float aspect, float near, float far) {
+void perspectiveMatrix(mat4 *result, float fov, float aspect, float near, float far) {
     float top = near * tan(M_PI / 180 * fov / 2);
     float bottom = -top;
     float right = top * aspect;
     float left = -right;
-
-    mat4 *result = malloc(sizeof(mat4));	
 
     for(int i = 0; i < 16; i++) {
         result->vals[i] = 0;
@@ -129,8 +117,10 @@ mat4 *perspectiveMatrix(float fov, float aspect, float near, float far) {
     result->vals[11] = -1;
 
     result->vals[14] = 2 * far * near / (near - far);
+}
 
-    return result;
+void lookAt(vec3 *cameraPos, vec3 *targetPos, vec3 *upVector) {
+     
 }
 
 void multiplyMatrices(mat4 *result, mat4 *a, mat4 *b) {
@@ -163,12 +153,8 @@ void setUniformMatrix(GLuint program, char *name, mat4 *in) {
 	glUniformMatrix4fv(location, 1, GL_FALSE, in->vals);
 }
 
-float *matrixPointer(mat4 *in) {
-	return in->vals;
-}
-
 void destroyMatrix(mat4 *mat) {
-    free(mat);
+    //nothing to do when destroying matrix
 }
 
 void printMatrix(mat4 *in) {

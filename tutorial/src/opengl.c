@@ -158,6 +158,10 @@ int main()
     glfwSetTime(0);
 
 	float angle = 0;
+    vec3 rotation, translation, scaling;
+
+    (void)scaling;
+
     while (!glfwWindowShouldClose(window))
     {
         processInput(window);
@@ -168,33 +172,45 @@ int main()
         // draw our first triangle
         glUseProgram(shaderProgram);
 
-        mat4 *view = identityMatrix();
-		rotateMatrix(view, view, (vec3){0, 1, 0}, angle);
-		translateMatrix(view, view, (vec3){0, 0, -3});
-        setUniformMatrix(shaderProgram, "view", view);
-        destroyMatrix(view);
+        mat4 view;
+        identityMatrix(&view);
+        
+        initializeVector(&translation, 0, 0, -3);
+		translateMatrix(&view, &view, &translation);
+        destroyVector(&translation);
 
-        mat4 *projection = perspectiveMatrix(45, ((float)SCR_WIDTH) / SCR_HEIGHT, 0.1, 20);
-        //mat4 *projection = orthoMatrix(-1, 1, -1, 1, 1, 20);
-        setUniformMatrix(shaderProgram, "projection", projection);
-        destroyMatrix(projection);
+        setUniformMatrix(shaderProgram, "view", &view);
+        destroyMatrix(&view);
+
+        mat4 projection;
+        perspectiveMatrix(&projection, 45, ((float)SCR_WIDTH) / SCR_HEIGHT, 0.1, 20);
+        //mat4 *projection = orthoMatrix(-3, 3, -3, 3, 1, 20);
+        setUniformMatrix(shaderProgram, "projection", &projection);
+        destroyMatrix(&projection);
         
         ////////////////////////////////////////////////////////////////////
 
 		for(int i = 0; i < 10; i++) {
-			mat4 *model = identityMatrix();
+            mat4 model;
+			identityMatrix(&model);
 
-			rotateMatrix(model, model, (vec3){1, 2, 3}, i);
+            initializeVector(&rotation, 1, 1, 1);
+			rotateMatrix(&model, &model, &rotation, angle);
+            destroyVector(&rotation);
 			
-			float *translation = positions + (3 * i);
-			translateMatrix(model, model, (vec3){translation[0], translation[1], translation[2]});
+			float *translationVals = &positions[3 * i];
 
-			setUniformMatrix(shaderProgram, "model", model);
-			destroyMatrix(model);
+            initializeVector(&translation, translationVals[0], translationVals[1], translationVals[2]);
+			translateMatrix(&model, &model, &translation);
+            destroyVector(&translation);
+
+			setUniformMatrix(shaderProgram, "model", &model);
+			destroyMatrix(&model);
 			
 			glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 			glBindTexture(GL_TEXTURE_2D, texture);
 
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			//glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 			glBindVertexArray(0); // no need to unbind it every time 
