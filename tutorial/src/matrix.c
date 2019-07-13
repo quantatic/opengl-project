@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void identityMatrix(mat4 *result) {
+void initializeIdentityMatrix(mat4 *result) {
 
     for(int i = 0; i < 16; i++) {
         result->vals[i] = 0;
@@ -119,8 +119,52 @@ void perspectiveMatrix(mat4 *result, float fov, float aspect, float near, float 
     result->vals[14] = 2 * far * near / (near - far);
 }
 
-void lookAt(vec3 *cameraPos, vec3 *targetPos, vec3 *upVector) {
-     
+void lookAt(mat4 *result, vec3 *cameraPos, vec3 *targetPos, vec3 *upVector) {
+    vec3 cameraDirection;    //build the camera "direction" vector (looks from target to camera, because we're "inverting" word camera transformations 
+    subtractVectors(&cameraDirection, cameraPos, targetPos);
+    normal(&cameraDirection, &cameraDirection); //all direction vectors must be normalized
+
+    vec3 upVectorNormalized;
+    normal(&upVectorNormalized, upVector);
+
+    vec3 cameraRight;
+    crossProduct(&cameraRight, &upVectorNormalized, &cameraDirection);
+    normal(&cameraRight, &cameraRight); //all direction vectors must be normalized
+
+    vec3 cameraUp;
+    crossProduct(&cameraUp, &cameraDirection, &cameraRight);
+    normal(&cameraUp, &cameraUp); //all direction vectors must be normalized
+
+    mat4 coordinateTransformation;
+    
+	coordinateTransformation.vals[0] = cameraRight.x;
+	coordinateTransformation.vals[1] = cameraUp.x;
+	coordinateTransformation.vals[2] = cameraDirection.x;
+	coordinateTransformation.vals[3] = 0;
+
+	coordinateTransformation.vals[4] = cameraRight.y;
+	coordinateTransformation.vals[5] = cameraUp.y;
+	coordinateTransformation.vals[6] = cameraDirection.y;
+	coordinateTransformation.vals[7] = 0;
+
+	coordinateTransformation.vals[8] = cameraRight.z;
+	coordinateTransformation.vals[9] = cameraUp.z;
+	coordinateTransformation.vals[10] = cameraDirection.z;
+	coordinateTransformation.vals[11] = 0;
+
+	coordinateTransformation.vals[12] = 0;
+	coordinateTransformation.vals[13] = 0;
+	coordinateTransformation.vals[14] = 0;
+	coordinateTransformation.vals[15] = 1;
+
+    mat4 coordinateTranslation;
+    initializeIdentityMatrix(&coordinateTranslation);
+    
+    coordinateTranslation.vals[12] = -cameraPos->x;
+    coordinateTranslation.vals[13] = -cameraPos->y;
+    coordinateTranslation.vals[14] = -cameraPos->z;
+
+    multiplyMatrices(result, &coordinateTransformation, &coordinateTranslation);
 }
 
 void multiplyMatrices(mat4 *result, mat4 *a, mat4 *b) {
@@ -172,4 +216,62 @@ void printMatrix(mat4 *in) {
     }
 
     printf("]\n");
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+void initializeVector(vec3 *result, float x, float y, float z) {
+	result->x = x;
+	result->y = y;
+	result->z = z;
+}
+
+void destroyVector(vec3 *in) {
+    //nothing to do for destroying vector
+}
+
+void crossProduct(vec3 *result, vec3 *a, vec3 *b) {
+    float resX = a->y * b->z - a->z * b->y;
+    float resY = a->z * b->x - a->x * b->z;
+    float resZ = a->x * b->y - a->y * b->x;
+
+    result->x = resX;
+    result->y = resY;
+    result->z = resZ;
+}
+
+void normal(vec3 *result, vec3 *in) {
+    float magnitude = sqrt(in->x * in->x + in->y * in->y + in->z * in->z);
+
+    result->x = in->x / magnitude;
+    result->y = in->y / magnitude;
+    result->z = in->z / magnitude;
+}
+
+void addVectors(vec3 *result, vec3 *a, vec3 *b) {
+    result->x = a->x + b->x;
+    result->y = a->y + b->y;
+    result->z = a->z + b->z;
+}
+
+void subtractVectors(vec3 *result, vec3 *a, vec3 *b) {
+    result->x = a->x - b->x;
+    result->y = a->y - b->y;
+    result->z = a->z - b->z;
+}
+
+void multiplyVectors(vec3 *result, vec3 *a, float scalar) {
+    result->x = a->x * scalar;
+    result->y = a->y * scalar;
+    result->z = a->z * scalar;
+}
+
+void divideVectors(vec3 *result, vec3 *a, float scalar) {
+    result->x = a->x / scalar;
+    result->y = a->y / scalar;
+    result->z = a->z / scalar;
+}
+
+void printVector(vec3 *in) {
+    printf("[%f, %f, %f]\n", in->x, in->y, in->z);
 }

@@ -7,7 +7,6 @@
 
 #include "shader.h"
 #include "matrix.h"
-#include "vector.h"
 #include "texture.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -173,18 +172,24 @@ int main()
         glUseProgram(shaderProgram);
 
         mat4 view;
-        identityMatrix(&view);
-        
-        initializeVector(&translation, 0, 0, -3);
-		translateMatrix(&view, &view, &translation);
-        destroyVector(&translation);
+        vec3 cameraPos, targetPos, upVector;
+        float radius = 20.0f;
+        float camX = sin(angle) * radius;
+        float camZ = cos(angle) * radius;
 
+        initializeVector(&cameraPos, camX, 0, camZ);
+        initializeVector(&targetPos, 0, 0, 0);
+        initializeVector(&upVector, 0, 1, 0);
+        lookAt(&view, &cameraPos, &targetPos, &upVector);
+
+        //printMatrix(&view);
+        
         setUniformMatrix(shaderProgram, "view", &view);
         destroyMatrix(&view);
 
         mat4 projection;
-        perspectiveMatrix(&projection, 45, ((float)SCR_WIDTH) / SCR_HEIGHT, 0.1, 20);
-        //mat4 *projection = orthoMatrix(-3, 3, -3, 3, 1, 20);
+        perspectiveMatrix(&projection, 45, ((float)SCR_WIDTH) / SCR_HEIGHT, 0.1, 100);
+        //orthoMatrix(&projection, -3, 3, -3, 3, 1, 20);
         setUniformMatrix(shaderProgram, "projection", &projection);
         destroyMatrix(&projection);
         
@@ -192,10 +197,10 @@ int main()
 
 		for(int i = 0; i < 10; i++) {
             mat4 model;
-			identityMatrix(&model);
+			initializeIdentityMatrix(&model);
 
             initializeVector(&rotation, 1, 1, 1);
-			rotateMatrix(&model, &model, &rotation, angle);
+			//rotateMatrix(&model, &model, &rotation, angle);
             destroyVector(&rotation);
 			
 			float *translationVals = &positions[3 * i];
@@ -210,7 +215,7 @@ int main()
 			glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 			glBindTexture(GL_TEXTURE_2D, texture);
 
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			//glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 			glBindVertexArray(0); // no need to unbind it every time 
