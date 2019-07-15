@@ -1,19 +1,32 @@
-CC = gcc.exe
+CC = g++.exe
+SRC_EXTENSION = cpp
+HEADER_EXTENSION = hpp
 
 OUT_FILENAME = opengl.exe
 
-INCLUDE_FLAGS = -Iinclude
+CFLAGS = -O3 -g -Wall -Iinclude
 LDFLAGS = -Llib -lglfw3dll -lglew32 -lopengl32 -lm
 
-CFLAGS = -O3 -g -Wall
-
-BIN_DIR = bin
 SRC_DIR = src
+BUILD_DIR = build
+BIN_DIR = bin
 
-SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
-HEADER_FILES = $(wildcard $(SRC_DIR)/*.h)
+SRC_FILES = $(wildcard $(SRC_DIR)/*.$(SRC_EXTENSION))
+HEADER_FILES = $(wildcard $(SRC_DIR)/*.$(HEADER_EXTENSION))
+OBJ_FILES = $(patsubst $(SRC_DIR)/%.$(SRC_EXTENSION),$(BUILD_DIR)/%.o,$(SRC_FILES))
 
-OUT_FILE = $(BIN_DIR)/$(OUT_FILE)
+OUT_FILE = $(BIN_DIR)/$(OUT_FILENAME)
 
-all: $(SRC_FILES) $(HEADER_FILES)
-	/bin/bash -c "$(CC) $(SRC_FILES) $(INCLUDE_FLAGS) $(LDFLAGS) $(CFLAGS) -o $(BIN_DIR)/opengl.exe"
+$(OUT_FILE): $(OBJ_FILES)
+	@echo $(SRC_FILES)
+	/bin/bash -c "$(CC) $(OBJ_FILES) $(LDFLAGS) -o $(BIN_DIR)/opengl.exe"
+
+run: $(OUT_FILE)
+	bin/$(OUT_FILENAME)
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.$(SRC_EXTENSION) $(HEADER_FILES)
+	/bin/bash -c "$(CC) -c $< $(CFLAGS) -o $@"
+
+clean:
+	rm -f $(OBJ_FILES)
+	rm -f $(OUT_FILE)

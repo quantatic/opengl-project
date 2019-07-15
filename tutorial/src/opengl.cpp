@@ -1,13 +1,15 @@
+#include "matrix.hpp"
+#include "vector.hpp"
+#include "shader.hpp"
+#include "texture.hpp"
+
 #include <GL/glew.h>
+
 #include <GLFW/glfw3.h>
 
 #include <stdio.h>
 #include <stdbool.h>
 #include <math.h>
-
-#include "shader.h"
-#include "matrix.h"
-#include "texture.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -171,46 +173,33 @@ int main()
         // draw our first triangle
         glUseProgram(shaderProgram);
 
-        mat4 view;
-        vec3 cameraPos, targetPos, upVector;
         float radius = 20.0f;
         float camX = sin(angle) * radius;
         float camZ = cos(angle) * radius;
 
-        initializeVector(&cameraPos, camX, 0, camZ);
-        initializeVector(&targetPos, 0, 0, 0);
-        initializeVector(&upVector, 0, 1, 0);
-        lookAt(&view, &cameraPos, &targetPos, &upVector);
-
-        //printMatrix(&view);
+		vec3 cameraPos(camX, 0, camZ);
+		vec3 targetPos(0, 0, 0);
+		vec3 upVector(0, 1, 0);
+        mat4 view = mat4::lookAt(cameraPos, targetPos, upVector);
         
-        setUniformMatrix(shaderProgram, "view", &view);
-        destroyMatrix(&view);
+		view.setUniformMatrix(shaderProgram, "view");
 
-        mat4 projection;
-        perspectiveMatrix(&projection, 45, ((float)SCR_WIDTH) / SCR_HEIGHT, 0.1, 100);
-        //orthoMatrix(&projection, -3, 3, -3, 3, 1, 20);
-        setUniformMatrix(shaderProgram, "projection", &projection);
-        destroyMatrix(&projection);
+        mat4 projection = mat4::perspectiveMatrix(45, (float)SCR_WIDTH / SCR_HEIGHT, 0.1, 100);
+        //orthoMatrix(&projection, -3, 3, -3, 3, 1, 100);
+        projection.setUniformMatrix(shaderProgram, "projection");
         
         ////////////////////////////////////////////////////////////////////
 
 		for(int i = 0; i < 10; i++) {
-            mat4 model;
-			initializeIdentityMatrix(&model);
+            mat4 model(1);
 
-            initializeVector(&rotation, 1, 1, 1);
-			//rotateMatrix(&model, &model, &rotation, angle);
-            destroyVector(&rotation);
+			rotation = vec3(1, 1, 1);
 			
 			float *translationVals = &positions[3 * i];
 
-            initializeVector(&translation, translationVals[0], translationVals[1], translationVals[2]);
-			translateMatrix(&model, &model, &translation);
-            destroyVector(&translation);
+			model *= mat4::translationMatrix(vec3(translationVals[0], translationVals[1], translationVals[2]));
 
-			setUniformMatrix(shaderProgram, "model", &model);
-			destroyMatrix(&model);
+			model.setUniformMatrix(shaderProgram, "model");
 			
 			glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 			glBindTexture(GL_TEXTURE_2D, texture);

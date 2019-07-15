@@ -1,2 +1,4 @@
 #ignore built program
 */bin/opengl.exe 
+*/obj
+*/build

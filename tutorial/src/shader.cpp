@@ -1,4 +1,4 @@
-#include "shader.h"
+#include "shader.hpp"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -17,7 +17,7 @@ GLuint loadShaderProgram(const char *vertexPath, const char *fragmentPath) {
     fileLen = ftell(vertexFile);
     fseek(vertexFile, 0, SEEK_SET);
 
-    char *vertexCode = malloc(sizeof(char) * (fileLen + 1));
+    char *vertexCode = (char *)malloc(sizeof(char) * (fileLen + 1));
 
     codeLen = fread(vertexCode, sizeof(char), fileLen, vertexFile);
     fclose(vertexFile);
@@ -55,7 +55,7 @@ GLuint loadShaderProgram(const char *vertexPath, const char *fragmentPath) {
     fileLen = ftell(fragmentFile);
     fseek(fragmentFile, 0, SEEK_SET);
 
-    char *fragmentCode = malloc(sizeof(char) * (fileLen + 1));
+    char *fragmentCode = (char *)malloc(sizeof(char) * (fileLen + 1));
     
     codeLen = fread(fragmentCode, sizeof(char), fileLen, fragmentFile);
     fclose(fragmentFile);
