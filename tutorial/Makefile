@@ -1,4 +1,7 @@
 CC = g++.exe
+
+SHELL_CMD = cmd.exe /c
+
 SRC_EXTENSION = cpp
 HEADER_EXTENSION = hpp
 
@@ -18,13 +21,13 @@ OBJ_FILES = $(patsubst $(SRC_DIR)/%.$(SRC_EXTENSION),$(BUILD_DIR)/%.o,$(SRC_FILE
 OUT_FILE = $(BIN_DIR)/$(OUT_FILENAME)
 
 $(OUT_FILE): $(OBJ_FILES)
-	/bin/bash -c "$(CC) $(OBJ_FILES) $(LDFLAGS) -o $(OUT_FILE)"
+	$(SHELL_CMD) "$(CC) $(OBJ_FILES) $(LDFLAGS) -o $(OUT_FILE)"
 
 run: $(OUT_FILE)
 	bin/$(OUT_FILENAME)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.$(SRC_EXTENSION) $(HEADER_FILES)
-	/bin/bash -c "$(CC) -c $< $(CFLAGS) -o $@"
+	$(SHELL_CMD) "$(CC) -c $< $(CFLAGS) -o $@"
 
 clean:
 	rm -f $(OBJ_FILES)

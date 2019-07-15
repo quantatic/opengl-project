@@ -9,7 +9,7 @@
 #include <GLFW/glfw3.h>
 
 #include <stdio.h>
- #include <stdbool.h>
+#include <stdbool.h>
 #include <math.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -199,7 +199,7 @@ int main()
 
 			float *translationVals = &positions[3 * i];
 
-			model = mat4::rotationMatrix(vec3(1, 1, 1), i) * model;
+			//model = mat4::rotationMatrix(vec3(1, 1, 1), i) * model;
 			model = mat4::translationMatrix(vec3(translationVals[0], translationVals[1], translationVals[2])) * model;
 
 			model.setUniformMatrix(shaderProgram, "model");
