@@ -128,7 +128,7 @@ mat4 mat4::perspectiveMatrix(float fov, float aspect, float near, float far) {
 mat4 mat4::lookAt(const vec3 &cameraPos, const vec3 &targetPos, const vec3 &upVector) {
 	vec3 cameraDirectionNormalized = (cameraPos - targetPos).normal();
 	vec3 upVectorNormalized = upVector.normal();
-	vec3 cameraRightNormalized = upVectorNormalized.cross(cameraDirectionNormalized);
+	vec3 cameraRightNormalized = upVectorNormalized.cross(cameraDirectionNormalized).normal();
 
 	vec3 cameraUpNormalized = cameraDirectionNormalized.cross(cameraRightNormalized).normal();
 

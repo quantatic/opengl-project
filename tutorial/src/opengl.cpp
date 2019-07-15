@@ -2,21 +2,28 @@
 #include "vector.hpp"
 #include "shader.hpp"
 #include "texture.hpp"
+#include "camera.hpp"
 
 #include <GL/glew.h>
 
 #include <GLFW/glfw3.h>
 
 #include <stdio.h>
-#include <stdbool.h>
+ #include <stdbool.h>
 #include <math.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
+void mouseCallback(GLFWwindow *window, double xPos, double yPos);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
+
+camera sceneCamera;
+
+float mouseX = SCR_WIDTH / 2;
+float mouseY = SCR_HEIGHT / 2;
 
 int main()
 {
@@ -33,7 +40,7 @@ int main()
 
     // glfw window creation
     // --------------------
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "OpenGL Game", NULL, NULL);
     if (window == NULL)
     {
         printf("Failed to create GLFW window\n");
@@ -42,6 +49,8 @@ int main()
     }
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPosCallback(window, mouseCallback);
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
@@ -163,6 +172,7 @@ int main()
 
     (void)scaling;
 
+
     while (!glfwWindowShouldClose(window))
     {
         processInput(window);
@@ -173,19 +183,13 @@ int main()
         // draw our first triangle
         glUseProgram(shaderProgram);
 
-        float radius = 20.0f;
-        float camX = sin(angle) * radius;
-        float camZ = cos(angle) * radius;
-
-		vec3 cameraPos(camX, 0, camZ);
-		vec3 targetPos(0, 0, 0);
-		vec3 upVector(0, 1, 0);
-        mat4 view = mat4::lookAt(cameraPos, targetPos, upVector);
+        mat4 view = sceneCamera.getViewMatrix();
         
 		view.setUniformMatrix(shaderProgram, "view");
+		//std::cout << view << "\n";
 
         mat4 projection = mat4::perspectiveMatrix(45, (float)SCR_WIDTH / SCR_HEIGHT, 0.1, 100);
-        //orthoMatrix(&projection, -3, 3, -3, 3, 1, 100);
+        //mat4 projection = mat4::orthoMatrix(-5, 5, -5, 5, 1, 1000);
         projection.setUniformMatrix(shaderProgram, "projection");
         
         ////////////////////////////////////////////////////////////////////
@@ -193,11 +197,10 @@ int main()
 		for(int i = 0; i < 10; i++) {
             mat4 model(1);
 
-			rotation = vec3(1, 1, 1);
-			
 			float *translationVals = &positions[3 * i];
 
-			model *= mat4::translationMatrix(vec3(translationVals[0], translationVals[1], translationVals[2]));
+			model = mat4::rotationMatrix(vec3(1, 1, 1), i) * model;
+			model = mat4::translationMatrix(vec3(translationVals[0], translationVals[1], translationVals[2])) * model;
 
 			model.setUniformMatrix(shaderProgram, "model");
 			
@@ -244,10 +247,42 @@ int main()
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow *window)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+void processInput(GLFWwindow *window) {
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
+	}
+	
+	if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+		sceneCamera.processKeyPress(FORWARD);	
+	}
+
+	if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+		sceneCamera.processKeyPress(BACKWARD);	
+	}
+
+	if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+		sceneCamera.processKeyPress(LEFT);	
+	}
+
+	if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+		sceneCamera.processKeyPress(RIGHT);	
+	}
+
+}
+
+void mouseCallback(GLFWwindow *window, double xPos, double yPos) {
+	float xOffset = xPos - mouseX;
+	float yOffset = mouseY - yPos; //reverse since y-coords are from bottom to top
+
+	mouseX = xPos;
+	mouseY = yPos;
+
+	float sensitivity = 0.005f;
+
+	xOffset *= sensitivity;
+	yOffset *= sensitivity;
+
+	sceneCamera.processMouseMovement(xOffset, yOffset);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
