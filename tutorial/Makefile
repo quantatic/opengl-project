@@ -18,8 +18,7 @@ OBJ_FILES = $(patsubst $(SRC_DIR)/%.$(SRC_EXTENSION),$(BUILD_DIR)/%.o,$(SRC_FILE
 OUT_FILE = $(BIN_DIR)/$(OUT_FILENAME)
 
 $(OUT_FILE): $(OBJ_FILES)
-	@echo $(SRC_FILES)
-	/bin/bash -c "$(CC) $(OBJ_FILES) $(LDFLAGS) -o $(BIN_DIR)/opengl.exe"
+	/bin/bash -c "$(CC) $(OBJ_FILES) $(LDFLAGS) -o $(OUT_FILE)"
 
 run: $(OUT_FILE)
 	bin/$(OUT_FILENAME)
