@@ -8,36 +8,36 @@
 #include <cmath>
 #include <iostream>
 
-class mat4 {
+class Mat4 {
 	float vals[16];
 
 	public:
-		mat4();
-		mat4(float diagonal);
-		mat4(const mat4 &other);
-		mat4 &operator=(const mat4 &other);
+		Mat4();
+		Mat4(float diagonal);
+		Mat4(const Mat4 &other);
+		Mat4 &operator=(const Mat4 &other);
 
-		static mat4 rotationMatrix(const vec3 &axis, float angle);
-		static mat4 scaleMatrix(const vec3 &scale);
-		static mat4 translationMatrix(const vec3 &translation);
-		static mat4 orthoMatrix(float left, float right, float bottom, float top, float near, float far);
-		static mat4 fulstrumMatrix(float left, float right, float bottom, float top, float near, float far);
-		static mat4 perspectiveMatrix(float fov, float aspect, float near, float far);
-		static mat4 lookAt(const vec3 &cameraPos, const vec3 &targetPos, const vec3 &upVector);
+		static Mat4 rotationMatrix(const Vec3 &axis, float angle);
+		static Mat4 scaleMatrix(const Vec3 &scale);
+		static Mat4 translationMatrix(const Vec3 &translation);
+		static Mat4 orthoMatrix(float left, float right, float bottom, float top, float near, float far);
+		static Mat4 fulstrumMatrix(float left, float right, float bottom, float top, float near, float far);
+		static Mat4 perspectiveMatrix(float fov, float aspect, float near, float far);
+		static Mat4 lookAt(const Vec3 &cameraPos, const Vec3 &targetPos, const Vec3 &upVector);
 
-		mat4 &operator+=(const mat4 &other);
-		mat4 operator+(const mat4 &other) const;
+		Mat4 &operator+=(const Mat4 &other);
+		Mat4 operator+(const Mat4 &other) const;
 
-		mat4 &operator-=(const mat4 &other);
-		mat4 operator-(const mat4 &other) const;
+		Mat4 &operator-=(const Mat4 &other);
+		Mat4 operator-(const Mat4 &other) const;
 
-		mat4 &operator*=(const mat4 &other);
-		mat4 operator*(const mat4 &other) const;
+		Mat4 &operator*=(const Mat4 &other);
+		Mat4 operator*(const Mat4 &other) const;
 
 		void setUniformMatrix(GLuint program, const char *name) const;
 
-		friend std::ostream &operator<<(std::ostream &lhs, const mat4 &rhs);		
-		~mat4();
+		friend std::ostream &operator<<(std::ostream &lhs, const Mat4 &rhs);		
+		~Mat4();
 };
 
 

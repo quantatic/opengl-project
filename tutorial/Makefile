@@ -1,6 +1,7 @@
 CC = g++.exe
 
 SHELL_CMD = cmd.exe /c
+#SHELL_CMD = /bin/sh -c
 
 SRC_EXTENSION = cpp
 HEADER_EXTENSION = hpp

@@ -3,41 +3,41 @@
 
 #include <iostream>
 
-class vec3 {
+class Vec3 {
 	float x;
 	float y;
 	float z;
 
 	public:
-		vec3();
-		vec3(float x, float y, float z);
-		vec3(const vec3 &other);
-		vec3 &operator=(const vec3 &other);
+		Vec3();
+		Vec3(float x, float y, float z);
+		Vec3(const Vec3 &other);
+		Vec3 &operator=(const Vec3 &other);
 
-		vec3 &operator+=(const vec3 &other);
-		vec3 operator+(const vec3 &other) const; 
+		Vec3 &operator+=(const Vec3 &other);
+		Vec3 operator+(const Vec3 &other) const; 
 
-		vec3 &operator-=(const vec3 &other);
-		vec3 operator-(const vec3 &other) const; 
+		Vec3 &operator-=(const Vec3 &other);
+		Vec3 operator-(const Vec3 &other) const; 
 
-		vec3 &operator*=(float other); 
-		vec3 operator*(float other) const; 
+		Vec3 &operator*=(float other); 
+		Vec3 operator*(float other) const; 
 
-		vec3 &operator/=(float other); 
-		vec3 operator/(float other) const; 
+		Vec3 &operator/=(float other); 
+		Vec3 operator/(float other) const; 
 
-		vec3 cross(const vec3 &other) const;
-		float dot(const vec3 &other) const; 
+		Vec3 cross(const Vec3 &other) const;
+		float dot(const Vec3 &other) const; 
 
-		vec3 normal() const;
+		Vec3 normal() const;
 
 		float getX() const;
 		float getY() const;
 		float getZ() const;
 
-		friend std::ostream &operator<<(std::ostream &lhs, const vec3 &rhs);
+		friend std::ostream &operator<<(std::ostream &lhs, const Vec3 &rhs);
 
-		~vec3();
+		~Vec3();
 };
 
 #endif

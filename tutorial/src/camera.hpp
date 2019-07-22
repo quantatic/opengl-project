@@ -6,29 +6,36 @@
 
 #include <GLFW/glfw3.h>
 
-enum MOVEMENT_DIRECTION {
-	FORWARD,
-	BACKWARD,
-	LEFT,
-	RIGHT
-};
-
-class camera {
-	vec3 pos;
-	vec3 up;
+class Camera {
+	Vec3 pos;
+	Vec3 up;
 	float pitch;
 	float yaw;
-	float roll;
+
+	float moveSpeed;
+	float mouseSensitivity;
+
+	float lastMouseX;
+	float lastMouseY;
 
 	public:
-		camera();
+		enum CameraMovement {
+			LOCAL_FORWARD,
+			LOCAL_BACKWARD,
+			LOCAL_RIGHT,
+			LOCAL_LEFT,
+			PITCH,
+			YAW,
+		};
 
-		mat4 getViewMatrix() const;
+		Camera();
 
-		void processMouseMovement(float xOffset, float yOffset);
-		void processKeyPress(MOVEMENT_DIRECTION dir);
+		Vec3 getLookDirection() const;
+		Mat4 getViewMatrix() const;
+		
+		void move(CameraMovement type, float amount);
 
-		~camera();
+		~Camera();
 };
 
 #endif

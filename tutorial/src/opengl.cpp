@@ -12,21 +12,17 @@
 #include <stdbool.h>
 #include <math.h>
 
+#define FPS 120
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow *window);
+void processInput(GLFWwindow *window, Camera &sceneCamera, double &mouseX, double &mouseY);
 void mouseCallback(GLFWwindow *window, double xPos, double yPos);
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 2500;
+const unsigned int SCR_HEIGHT = 1250;
 
-camera sceneCamera;
-
-float mouseX = SCR_WIDTH / 2;
-float mouseY = SCR_HEIGHT / 2;
-
-int main()
-{
+int main() {
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
@@ -50,7 +46,8 @@ int main()
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	glfwSetCursorPosCallback(window, mouseCallback);
+
+	Camera sceneCamera;
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
@@ -168,14 +165,16 @@ int main()
     glfwSetTime(0);
 
 	float angle = 0;
-    vec3 rotation, translation, scaling;
+    Vec3 rotation, translation, scaling;
 
     (void)scaling;
 
+	double mouseX, mouseY;
 
-    while (!glfwWindowShouldClose(window))
-    {
-        processInput(window);
+	glfwGetCursorPos(window, &mouseX, &mouseY);
+
+    while (!glfwWindowShouldClose(window)) {
+        processInput(window, sceneCamera, mouseX, mouseY);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -183,24 +182,23 @@ int main()
         // draw our first triangle
         glUseProgram(shaderProgram);
 
-        mat4 view = sceneCamera.getViewMatrix();
+        Mat4 view = sceneCamera.getViewMatrix();
         
 		view.setUniformMatrix(shaderProgram, "view");
 		//std::cout << view << "\n";
 
-        mat4 projection = mat4::perspectiveMatrix(45, (float)SCR_WIDTH / SCR_HEIGHT, 0.1, 100);
-        //mat4 projection = mat4::orthoMatrix(-5, 5, -5, 5, 1, 1000);
+        Mat4 projection = Mat4::perspectiveMatrix(45, (float)SCR_WIDTH / SCR_HEIGHT, 0.1, 100);
+        //Mat4 projection = Mat4::orthoMatrix(-5, 5, -5, 5, 1, 1000);
         projection.setUniformMatrix(shaderProgram, "projection");
         
         ////////////////////////////////////////////////////////////////////
 
 		for(int i = 0; i < 10; i++) {
-            mat4 model(1);
+            Mat4 model(1);
 
 			float *translationVals = &positions[3 * i];
 
-			//model = mat4::rotationMatrix(vec3(1, 1, 1), i) * model;
-			model = mat4::translationMatrix(vec3(translationVals[0], translationVals[1], translationVals[2])) * model;
+			model = Mat4::translationMatrix(Vec3(translationVals[0], translationVals[1], translationVals[2])) * model;
 
 			model.setUniformMatrix(shaderProgram, "model");
 			
@@ -224,6 +222,8 @@ int main()
         frames++;
 		angle += 0.0005;
 
+		while(glfwGetTime() < ((float)frames) / FPS) { }; //spin lock to limit frame rate
+
         if(glfwGetTime() >= 1) {
             printf("[+] FPS: %d\n", frames);
             frames = 0;
@@ -244,51 +244,51 @@ int main()
 
 }
 
-
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow *window) {
+void processInput(GLFWwindow *window, Camera &sceneCamera, double &lastMouseX, double &lastMouseY) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
 	}
+
+	float movementSpeed = 0.02;
 	
 	if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		sceneCamera.processKeyPress(FORWARD);	
+		sceneCamera.move(Camera::LOCAL_FORWARD, movementSpeed);	
 	}
 
 	if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		sceneCamera.processKeyPress(BACKWARD);	
+		sceneCamera.move(Camera::LOCAL_BACKWARD, movementSpeed);
 	}
 
 	if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		sceneCamera.processKeyPress(LEFT);	
+		sceneCamera.move(Camera::LOCAL_LEFT, movementSpeed);	
 	}
 
 	if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		sceneCamera.processKeyPress(RIGHT);	
+		sceneCamera.move(Camera::LOCAL_RIGHT, movementSpeed);	
 	}
 
+	float mouseSensitivity = 0.002;
+
+	double thisMouseX, thisMouseY;	
+
+	glfwGetCursorPos(window, &thisMouseX, &thisMouseY);
+
+	double mouseDeltaX = thisMouseX - lastMouseX;
+	double mouseDeltaY = lastMouseY - thisMouseY;
+
+	sceneCamera.move(Camera::YAW, -mouseDeltaX * mouseSensitivity); //increasing mouse x decreases yaw
+	sceneCamera.move(Camera::PITCH, mouseDeltaY * mouseSensitivity); //increasing mouse y increases pitch
+
+	lastMouseX = thisMouseX;
+	lastMouseY = thisMouseY;
 }
 
-void mouseCallback(GLFWwindow *window, double xPos, double yPos) {
-	float xOffset = xPos - mouseX;
-	float yOffset = mouseY - yPos; //reverse since y-coords are from bottom to top
-
-	mouseX = xPos;
-	mouseY = yPos;
-
-	float sensitivity = 0.005f;
-
-	xOffset *= sensitivity;
-	yOffset *= sensitivity;
-
-	sceneCamera.processMouseMovement(xOffset, yOffset);
-}
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     // make sure the viewport matches the new window dimensions; note that width and 
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);

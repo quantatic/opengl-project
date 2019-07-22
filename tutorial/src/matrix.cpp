@@ -1,12 +1,12 @@
 #include "matrix.hpp"
 
-mat4::mat4() {
+Mat4::Mat4() {
 	for(int i = 0; i < 16; i++) {
 		vals[i] = 0;
 	}
 }
 
-mat4::mat4(float diagonal) {
+Mat4::Mat4(float diagonal) {
 	for(int i = 0; i < 16; i++) {
 		vals[i] = 0;
 	}
@@ -17,13 +17,13 @@ mat4::mat4(float diagonal) {
 	vals[15] = diagonal;
 }
 
-mat4::mat4(const mat4 &other) {
+Mat4::Mat4(const Mat4 &other) {
 	for(int i = 0; i < 16; i++) {
 		vals[i] = other.vals[i];
 	}
 }
 
-mat4 &mat4::operator=(const mat4 &other) {
+Mat4 &Mat4::operator=(const Mat4 &other) {
 	if(this != &other) {
 		for(int i = 0; i < 16; i++) {
 			vals[i] = other.vals[i];
@@ -33,10 +33,10 @@ mat4 &mat4::operator=(const mat4 &other) {
 	return *this;
 }
 
-mat4 mat4::rotationMatrix(const vec3 &axis, float angle) {
-	mat4 result;
+Mat4 Mat4::rotationMatrix(const Vec3 &axis, float angle) {
+	Mat4 result;
 
-	vec3 normalized = axis.normal();
+	Vec3 normalized = axis.normal();
 
 	result.vals[0] = cos(angle) + normalized.getX() * normalized.getX() * (1 - cos(angle));
 	result.vals[1] = normalized.getX() * normalized.getY() * (1 - cos(angle)) + normalized.getZ() * sin(angle);
@@ -61,8 +61,8 @@ mat4 mat4::rotationMatrix(const vec3 &axis, float angle) {
 	return result;
 }
 
-mat4 mat4::scaleMatrix(const vec3 &scale) {
-	mat4 result(1);
+Mat4 Mat4::scaleMatrix(const Vec3 &scale) {
+	Mat4 result(1);
 
 	result.vals[0] = scale.getX();
 	result.vals[5] = scale.getY();
@@ -72,8 +72,8 @@ mat4 mat4::scaleMatrix(const vec3 &scale) {
 	return result;
 }
 
-mat4 mat4::translationMatrix(const vec3 &translation) {
-	mat4 result(1);
+Mat4 Mat4::translationMatrix(const Vec3 &translation) {
+	Mat4 result(1);
 
 	result.vals[12] = translation.getX();
 	result.vals[13] = translation.getY();
@@ -82,8 +82,8 @@ mat4 mat4::translationMatrix(const vec3 &translation) {
 	return result;
 }
 
-mat4 mat4::orthoMatrix(float left, float right, float bottom, float top, float near, float far) {
-	mat4 result;
+Mat4 Mat4::orthoMatrix(float left, float right, float bottom, float top, float near, float far) {
+	Mat4 result;
 
     result.vals[0] = 2 / (right - left);
 
@@ -99,8 +99,8 @@ mat4 mat4::orthoMatrix(float left, float right, float bottom, float top, float n
 	return result;
 }
 
-mat4 mat4::fulstrumMatrix(float left, float right, float bottom, float top, float near, float far) {
-	mat4 result;
+Mat4 Mat4::fulstrumMatrix(float left, float right, float bottom, float top, float near, float far) {
+	Mat4 result;
 
     result.vals[0] = 2 * near / (right - left);
 
@@ -116,7 +116,7 @@ mat4 mat4::fulstrumMatrix(float left, float right, float bottom, float top, floa
 	return result;
 }
 
-mat4 mat4::perspectiveMatrix(float fov, float aspect, float near, float far) {
+Mat4 Mat4::perspectiveMatrix(float fov, float aspect, float near, float far) {
     float top = near * tan(M_PI / 180 * fov / 2);
     float bottom = -top;
     float right = top * aspect;
@@ -125,14 +125,14 @@ mat4 mat4::perspectiveMatrix(float fov, float aspect, float near, float far) {
     return fulstrumMatrix(left, right, bottom, top, near, far);
 }
 
-mat4 mat4::lookAt(const vec3 &cameraPos, const vec3 &targetPos, const vec3 &upVector) {
-	vec3 cameraDirectionNormalized = (cameraPos - targetPos).normal();
-	vec3 upVectorNormalized = upVector.normal();
-	vec3 cameraRightNormalized = upVectorNormalized.cross(cameraDirectionNormalized).normal();
+Mat4 Mat4::lookAt(const Vec3 &cameraPos, const Vec3 &targetPos, const Vec3 &upVector) {
+	Vec3 cameraDirectionNormalized = (cameraPos - targetPos).normal();
+	Vec3 upVectorNormalized = upVector.normal();
+	Vec3 cameraRightNormalized = upVectorNormalized.cross(cameraDirectionNormalized).normal();
 
-	vec3 cameraUpNormalized = cameraDirectionNormalized.cross(cameraRightNormalized).normal();
+	Vec3 cameraUpNormalized = cameraDirectionNormalized.cross(cameraRightNormalized).normal();
 
-	mat4 coordinateTransformation;
+	Mat4 coordinateTransformation;
 	coordinateTransformation.vals[0] = cameraRightNormalized.getX();
 	coordinateTransformation.vals[1] = cameraUpNormalized.getX();
 	coordinateTransformation.vals[2] = cameraDirectionNormalized.getX();
@@ -153,7 +153,7 @@ mat4 mat4::lookAt(const vec3 &cameraPos, const vec3 &targetPos, const vec3 &upVe
 	coordinateTransformation.vals[14] = 0;
 	coordinateTransformation.vals[15] = 1;
 
-    mat4 coordinateTranslation(1);
+    Mat4 coordinateTranslation(1);
     
     coordinateTranslation.vals[12] = -cameraPos.getX();
     coordinateTranslation.vals[13] = -cameraPos.getY();
@@ -162,7 +162,7 @@ mat4 mat4::lookAt(const vec3 &cameraPos, const vec3 &targetPos, const vec3 &upVe
 	return coordinateTransformation * coordinateTranslation;
 }
 
-mat4 &mat4::operator+=(const mat4 &other) {
+Mat4 &Mat4::operator+=(const Mat4 &other) {
 	for(int i = 0; i < 16; i++) {
 		vals[i] += other.vals[i];
 	}
@@ -170,13 +170,13 @@ mat4 &mat4::operator+=(const mat4 &other) {
 	return *this;
 }
 
-mat4 mat4::operator+(const mat4 &other) const {
-	mat4 tmp(*this);
+Mat4 Mat4::operator+(const Mat4 &other) const {
+	Mat4 tmp(*this);
 	tmp += other;
 	return tmp;
 }
 
-mat4 &mat4::operator-=(const mat4 &other) {
+Mat4 &Mat4::operator-=(const Mat4 &other) {
 	for(int i = 0; i < 16; i++) {
 		vals[i] -= other.vals[i];
 	}
@@ -184,19 +184,19 @@ mat4 &mat4::operator-=(const mat4 &other) {
 	return *this;
 }
 
-mat4 mat4::operator-(const mat4 &other) const {
-	mat4 tmp(*this);
+Mat4 Mat4::operator-(const Mat4 &other) const {
+	Mat4 tmp(*this);
 	tmp -= other;
 	return tmp;
 }
 
-mat4 &mat4::operator*=(const mat4 &other) {
+Mat4 &Mat4::operator*=(const Mat4 &other) {
 	*this = *this * other;
 	return *this;
 }
 
-mat4 mat4::operator*(const mat4 &other) const {
-	mat4 result;
+Mat4 Mat4::operator*(const Mat4 &other) const {
+	Mat4 result;
 
 	for(int c = 0; c < 4; c++) {
 		for(int r = 0; r < 4; r++) {
@@ -217,12 +217,12 @@ mat4 mat4::operator*(const mat4 &other) const {
 	return result;
 }
 
-void mat4::setUniformMatrix(GLuint program, const char *name) const {
+void Mat4::setUniformMatrix(GLuint program, const char *name) const {
 	GLuint location = glGetUniformLocation(program, name);
 	glUniformMatrix4fv(location, 1, GL_FALSE, vals);
 }
 
-std::ostream &operator<<(std::ostream &lhs, const mat4 &rhs) {
+std::ostream &operator<<(std::ostream &lhs, const Mat4 &rhs) {
 	lhs << "[";
 
 	for(int r = 0; r < 4; r++) {
@@ -241,4 +241,4 @@ std::ostream &operator<<(std::ostream &lhs, const mat4 &rhs) {
 	return lhs;
 }
 
-mat4::~mat4() { };
+Mat4::~Mat4() { };

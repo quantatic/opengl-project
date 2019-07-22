@@ -2,69 +2,68 @@
 #include "matrix.hpp"
 #include "vector.hpp"
 
+#include <GLFW/glfw3.h>
+
 #include <cmath>
 #include <iostream>
+#include <limits>
 
-camera::camera() :
-	pos(vec3(0, 0, 0)),
-	up(vec3(0, 1, 0)),
+#define MINIMUM_PITCH (-M_PI / 2 * 0.999)
+#define MAXIMUM_PITCH (M_PI / 2 * 0.999)
+
+Camera::Camera() :
+	pos(Vec3(0, 0, 0)),
+	up(Vec3(0, 1, 0)),
 	pitch(0),
-	yaw(0),
-	roll(0)
+	yaw(0)
 { };
 
-mat4 camera::getViewMatrix() const {
-	vec3 lookDirection = vec3(
-			cos(pitch) * cos(yaw), 
-		    sin(pitch), 
- 			cos(pitch) * sin(yaw)
+Vec3 Camera::getLookDirection() const {
+	return Vec3(
+			cos(pitch) * sin(-yaw),
+			sin(pitch),
+			-cos(pitch) * cos(-yaw)
 		).normal();
-
-	return mat4::lookAt(pos, pos + lookDirection, up);
 }
 
-void camera::processMouseMovement(float xOffset, float yOffset) {
-	yaw += xOffset;
-	pitch += yOffset;
+Mat4 Camera::getViewMatrix() const {
+	return Mat4::lookAt(pos, pos + getLookDirection(), up);
+}
 
-	if(pitch + 0.01 > M_PI / 2) {
-		pitch = M_PI / 2;
-		pitch -= 0.01;
-	}
+void Camera::move(CameraMovement type, float amount) {
+	Vec3 lookDirection = getLookDirection();
 
-	if(pitch - 0.01 < -M_PI / 2) {
-		pitch = -M_PI / 2;
-		pitch += 0.01;
+	Vec3 lookRight = lookDirection.cross(up).normal();
+
+	switch(type) {
+		case LOCAL_FORWARD:
+			pos += (lookDirection * amount);
+			break;
+		case LOCAL_BACKWARD:
+			pos -= (lookDirection * amount);
+			break;
+		case LOCAL_RIGHT:
+			pos += (lookRight * amount);
+			break;
+		case LOCAL_LEFT:
+			pos -= (lookRight * amount);
+			break;
+		case PITCH:
+			pitch += amount;
+
+			if(pitch >= MAXIMUM_PITCH) {
+				pitch = MAXIMUM_PITCH;
+			}
+
+			if(pitch <= MINIMUM_PITCH) {
+				pitch = MINIMUM_PITCH; 
+			}
+
+			break;
+		case YAW:
+			yaw += amount;
+			break;
 	}
 }
 
-void camera::processKeyPress(MOVEMENT_DIRECTION dir) {
-	vec3 lookDirection = vec3(
-			cos(pitch) * cos(yaw), 
-		    sin(pitch), 
- 			cos(pitch) * sin(yaw)
-		).normal();
-
-	vec3 rightDirection = lookDirection.cross(up).normal();
-
-	float moveSpeed = 0.001;
-
-	if(dir == FORWARD) {
-		pos += lookDirection * moveSpeed;
-	}
-
-	if(dir == BACKWARD) {
-		pos -= lookDirection * moveSpeed;
-	}
-
-	if(dir == RIGHT) {
-		pos += rightDirection * moveSpeed;
-	}
-
-	if(dir == LEFT) {
-		pos -= rightDirection * moveSpeed;
-	}
-
-}
-
-camera::~camera() { }
+Camera::~Camera() { }
